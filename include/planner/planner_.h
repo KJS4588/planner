@@ -9,12 +9,16 @@
 #include "pcl/point_types.h"
 #include "pcl/io/pcd_io.h"
 #include "pcl/filters/conditional_removal.h"
-#include <pcl/filters/extract_indices.h>
+#include "pcl/filters/extract_indices.h"
+#include "pcl/filters/passthrough.h"
 
 #include "pcl/sample_consensus/model_types.h"
 #include "pcl/sample_consensus/method_types.h"
 #include "pcl/segmentation/sac_segmentation.h"
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/features/normal_3d.h>
+
+
 #include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
 
