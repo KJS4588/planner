@@ -17,6 +17,8 @@ void Planner::initSetup(){
     odom_sub_ = nh_.subscribe("/odom", 10, &Planner::odomCallback, this);
     point_sub_ = nh_.subscribe("/velodyne_points", 10, &Planner::pointCallback, this);    
     point_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cluster_object", 10);
+
+	global_path_ = loadGlobalPath();
 }
 
 void Planner::odomCallback(const nav_msgs::Odometry::ConstPtr &odom_msgs){
@@ -235,6 +237,35 @@ tuple<double*, double*> Planner::getLine(pcl::PointCloud<velodyne_pointcloud::Po
     return make_tuple(left_coef, right_coef);
 
 	//visualize(left_lane, right_lane, waypoint);
+}
+
+vector<OdomDouble> Planner::loadGlobalPath() {
+	vector<OdomDouble> path;
+
+	ifstream file(GLOBAL_PATH_FILE.data());
+
+	if (file.is_open()) {
+
+		string line;
+
+		while (getline(file, line)) {
+
+			istringstream ss(line);
+
+			vector<string> odomString;
+			string stringBuffer;
+			while (getline(ss, stringBuffer, ',')) {
+				odomString.push_back(stringBuffer);
+			}
+
+			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString(2)));
+			path.push_back(odomDouble);
+		}
+
+		file.close();
+	}
+
+	return path;
 }
 
 int main(int argc, char **argv){

@@ -19,6 +19,8 @@
 #include "cmath"
 #include "tuple"
 
+#define GLOBAL_PATH_FILE "/home/<change>/catkin_ws/src/global_path_generator/src/path.txt"
+
 using namespace std;
 typedef pcl::PointXYZI PointType;
 
@@ -93,6 +95,8 @@ private:
 	vector<float> right_poly_;
     vector<nav_msgs::Odometry> path_;
 
+	vector<OdomDouble> global_path_;
+
 public:
     void initSetup();
     void pointCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
@@ -102,4 +106,5 @@ public:
     tuple<double *, double *> getLine(pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr &cloud_XYZIR);
 	void visualize(vector<LanePoint> left_lane, vector<LanePoint> right_lane, vector<geometry_msgs::Point> waypoint);
 	pcl::PointXYZ getClosestObject(sensor_msgs::PointCloud2 object);
+	vector<OdomDouble> loadGlobalPath();
 };
