@@ -19,7 +19,7 @@
 #include "cmath"
 #include "tuple"
 
-#define GLOBAL_PATH_FILE "/home/<change>/catkin_ws/src/global_path_generator/src/path.txt"
+#define GLOBAL_PATH_FILE "/home/path.txt"
 
 using namespace std;
 typedef pcl::PointXYZI PointType;
@@ -41,13 +41,13 @@ class OdomDouble {
 		}
 
 		double getY() {
-			return this->Y;
+			return this->y;
 		}
 
 		double getZ() {
-			return this->Z;
+			return this->z;
 		}
-}
+};
 
 class LanePoint{
 	public:

@@ -242,7 +242,8 @@ tuple<double*, double*> Planner::getLine(pcl::PointCloud<velodyne_pointcloud::Po
 vector<OdomDouble> Planner::loadGlobalPath() {
 	vector<OdomDouble> path;
 
-	ifstream file(GLOBAL_PATH_FILE.data());
+	ifstream file;
+	file.open(GLOBAL_PATH_FILE);
 
 	if (file.is_open()) {
 
@@ -258,7 +259,7 @@ vector<OdomDouble> Planner::loadGlobalPath() {
 				odomString.push_back(stringBuffer);
 			}
 
-			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString(2)));
+			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString.at(2)));
 			path.push_back(odomDouble);
 		}
 
