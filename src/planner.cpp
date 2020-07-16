@@ -1,4 +1,6 @@
 #include "planner/planner.h"
+#include "clustering.cpp"
+
 #define MIN_INTEN 25	// minimum value of intensity to detect lane
 #define MAX_INTEN 70	// maximum value of intensity to detect lane
 
@@ -37,6 +39,7 @@ void Planner::odomCallback(const nav_msgs::Odometry::ConstPtr &odom_msgs){
 	yaw_d = yaw*180/M_PI;
     
 }
+
 void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &msg){
     pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr cloud_XYZIR (new pcl::PointCloud<velodyne_pointcloud::PointXYZIR>);
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>);
@@ -59,6 +62,8 @@ double Planner::calcDistance(double * coef, pcl::PointXYZ object_point){
 }
 
 void Planner::setPlan(double* left_coef, double* right_coef, sensor_msgs::PointCloud2 objects) {
+	return;
+	/*
     pcl::PointXYZ object_point = getClosestObject(objects);
 
     double dist_l = calcDistance(left_coef, object_point); 
@@ -66,12 +71,18 @@ void Planner::setPlan(double* left_coef, double* right_coef, sensor_msgs::PointC
 
     if (dist_l >= dist_r) { // use the road between obstacle and left_lane
     
-    } else { // dist_r > dist_l -> use the road between obstacle and right_lane
-    }
+    } else { // dist_r > dist_l -> use the road between obstacle and right_}
+		//pcl::PointXYZ Planner::getClosestObject(sensor_msgs::PointCloud2 objects)
+	}
+	*/
 }
 
-pcl::PointXYZ Planner::getClosestObject(sensor_msgs::PointCloud2 objects) {
+/*
+pcl::PointXYZ Planner::getClosestObject(sensor_msgs::PointCloud2 objects){
+	return 
 }
+*/
+
 
 tuple<double*, double*> Planner::getLine(pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr &cloud_XYZIR) {
     vector<Point> result_points;
@@ -159,10 +170,13 @@ tuple<double*, double*> Planner::getLine(pcl::PointCloud<velodyne_pointcloud::Po
 
         result = polyfit(xData, yData, left_lane.size(), ORDER, left_coef);
 
+		/*
         cout << endl;
         cout << "left lane" << endl;
         cout << left_coef[3] << " : " << left_coef[2] << " : " << left_coef[1] << " : " << left_coef[0] << endl;
         cout << endl;
+		*/
+
 
     } else { // less than 4 -> use previous poly
     }
@@ -208,10 +222,15 @@ tuple<double*, double*> Planner::getLine(pcl::PointCloud<velodyne_pointcloud::Po
 
         result = polyfit(xData, yData, right_lane.size(), ORDER, right_coef);
 
+
+		/*
         cout << endl;
         cout << "right lane" << endl;
         cout << right_coef[3] << " : " << right_coef[2] << " : " << right_coef[1] << " : " << right_coef[0] << endl;
         cout << endl;
+		*/
+
+
 
     } else { // less than 4 -> use previous poly
     }
@@ -224,7 +243,7 @@ tuple<double*, double*> Planner::getLine(pcl::PointCloud<velodyne_pointcloud::Po
         float waypoint_y_l = left_coef[3]*ld*ld*ld + left_coef[2]*ld*ld + left_coef[1] * ld + left_coef[0];
         float waypoint_y_r = right_coef[3]*ld*ld*ld + right_coef[2]*ld*ld + right_coef[1] * ld + right_coef[0];
         //cout << waypoint_y_l << "            " << waypoint_y_r << endl;
-        cout << ld << endl;
+        //cout << ld << endl;
         ld += 0.3;
         geometry_msgs::Point p;
         p.x = ld;
@@ -258,14 +277,34 @@ vector<OdomDouble> Planner::loadGlobalPath() {
 				odomString.push_back(stringBuffer);
 			}
 
-			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString.at(2)), stod(odomString.at(3), stod(odomString.at(4), stod(odomString.at(5)), stod(odomString.at(6));
+			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString.at(2)), stod(odomString.at(3)), stod(odomString.at(4)), stod(odomString.at(5)), stod(odomString.at(6)));
 			path.push_back(odomDouble);
 		}
 
 		file.close();
 	}
 
+	printGlobalPath(path);
+
 	return path;
+}
+
+void Planner::printGlobalPath(vector<OdomDouble> path) {
+	cout << "global path loading..." << endl;
+
+	for (auto o : path) {
+		cout << endl;
+		cout << "x : " << o.getX() << endl;
+		cout << "y : " << o.getY() << endl;
+		cout << "z : " << o.getZ() << endl;
+		cout << "o_x : " << o.getOX() << endl;
+		cout << "o_y : " << o.getOY() << endl;
+		cout << "o_z : " << o.getOZ() << endl;
+		cout << "o_w : " << o.getOW() << endl;
+	}
+
+	cout << "global path loaded successfully" << endl;
+	cout << endl;
 }
 
 int main(int argc, char **argv){

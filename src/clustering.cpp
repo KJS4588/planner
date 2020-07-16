@@ -1,11 +1,13 @@
 #include "planner/clustering.h"
 
+/*
 void Cluster::initSetup(){
     point_sub_ = nh_.subscribe("/velodyne_points", 10, &Cluster::clusterCallback, this);
     pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_filtered", 10);
 }
+*/
 
-void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
+sensor_msgs::PointCloud2 Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);
@@ -114,14 +116,15 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     sensor_msgs::PointCloud2 result;
     pcl_conversions::fromPCL(cloud_p, result);
     result.header.frame_id = "velodyne";
-    pub_.publish(result);
+   // pub_.publish(result);
+	return result;
 
 }
 
-int main(int argc, char **argv){
+/*int main(int argc, char **argv){
     ros::init(argc, argv, "Cluster");
     Cluster cl;
     cl.initSetup();
     ros::spin();
-}
+}*/
 

@@ -18,9 +18,14 @@
 #include "cmath"
 #include "tuple"
 
-#define GLOBAL_PATH_FILE "/home/path.txt"
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+
+#define GLOBAL_PATH_FILE "/home/hyeonbeen/path.txt"
 
 using namespace std;
+
 typedef pcl::PointXYZI PointType;
 
 class OdomDouble {
@@ -127,4 +132,5 @@ public:
 	void visualize(vector<LanePoint> left_lane, vector<LanePoint> right_lane, vector<geometry_msgs::Point> waypoint);
 	pcl::PointXYZ getClosestObject(sensor_msgs::PointCloud2 object);
 	vector<OdomDouble> loadGlobalPath();
+	void printGlobalPath(vector<OdomDouble>);
 };
