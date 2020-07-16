@@ -1,5 +1,4 @@
 #include "planner/planner.h"
-
 #define MIN_INTEN 25	// minimum value of intensity to detect lane
 #define MAX_INTEN 70	// maximum value of intensity to detect lane
 
@@ -47,8 +46,8 @@ void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &msg){
     double* left_coef = get<0>(getLine(cloud_XYZIR));
     double* right_coef = get<1>(getLine(cloud_XYZIR));
 
-    ecd_cluster c;
-    sensor_msgs::PointCloud2 objects = c.cloud_cb(msg);
+    Cluster c;
+    sensor_msgs::PointCloud2 objects = c.clusterCallback(msg);
     point_pub_.publish(objects);
 
     setPlan(left_coef, right_coef, objects);

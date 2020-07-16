@@ -50,6 +50,7 @@ include
 #   src/${PROJECT_NAME}/planner.cpp
 # )
 
-add_executable(planner src/planner.cpp)
+add_executable(Cluster src/clustering.cpp)
+#add_executable(Planner src/planner.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(planner ${catkin_LIBRARIES})
+target_link_libraries(Cluster ${catkin_LIBRARIES})

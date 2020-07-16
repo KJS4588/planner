@@ -27,7 +27,7 @@
 using namespace std;
 typedef pcl::PointXYZI PointType;
 
-class Planner{
+class Cluster {
 private:
     ros::NodeHandle nh_;
     ros::Publisher pub_, point_pub_, acker_pub_;
@@ -35,5 +35,5 @@ private:
 
 public:
     void initSetup();
-    void pointCallback(const sensor_msgs::PointCloud2ConstPtr &input);
+    void clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input);
 };

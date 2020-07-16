@@ -1,7 +1,6 @@
 #include "ros/ros.h"
 #include "planner/polyfit.h"
 #include "planner/polyfit.c"
-#include "planner/euclidean_cluster.cpp"
 
 #include "sensor_msgs/PointCloud2.h"
 #include "pcl_conversions/pcl_conversions.h"
