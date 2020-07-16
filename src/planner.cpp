@@ -258,7 +258,7 @@ vector<OdomDouble> Planner::loadGlobalPath() {
 				odomString.push_back(stringBuffer);
 			}
 
-			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString.at(2)));
+			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString.at(2)), stod(odomString.at(3), stod(odomString.at(4), stod(odomString.at(5)), stod(odomString.at(6));
 			path.push_back(odomDouble);
 		}
 
