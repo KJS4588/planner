@@ -35,7 +35,6 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
     // Create a pcl object to hold the ransac filtered object
     pcl::PointCloud<PointType>::Ptr cloud_plane (new pcl::PointCloud<PointType>()); 
-    point_pub_.publish(cloud);    
     
 
     pcl::SACSegmentation<PointType> seg;
@@ -118,9 +117,11 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     pub_.publish(result);
 
 }
+
 int main(int argc, char **argv){
     ros::init(argc, argv, "Cluster");
     Cluster cl;
     cl.initSetup();
     ros::spin();
 }
+
