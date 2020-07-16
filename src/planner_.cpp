@@ -7,7 +7,7 @@ void Planner::initSetup(){
 }
 
 void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &input){
-    pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filtered (new pcl::PointCloud<PointType>);
+    pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);
 
@@ -37,6 +37,7 @@ void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     // Create a pcl object to hold the ransac filtered object
     pcl::PointCloud<PointType>::Ptr cloud_plane (new pcl::PointCloud<PointType>()); 
     point_pub_.publish(cloud);    
+    
 
     pcl::SACSegmentation<PointType> seg;
     
@@ -58,10 +59,10 @@ void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     // Get the points associated with the planar surface
     extract.filter (*cloud_plane);
     extract.setNegative(true);
-    extract.filter(*cloud_filtered);
+    extract.filter(*cloud_filterd);
 
     pcl::search::KdTree<PointType>::Ptr tree (new pcl::search::KdTree<PointType>);
-    tree -> setInputCloud(cloud_filtered);
+    tree -> setInputCloud(cloud_filterd);
 
     vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<PointType> ec;
@@ -69,7 +70,7 @@ void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     ec.setMinClusterSize(100);
     ec.setMaxClusterSize(25000);
     ec.setSearchMethod(tree);
-    ec.setInputCloud(cloud_filtered);
+    ec.setInputCloud(cloud_filterd);
     ec.extract(cluster_indices);
     
     pcl::PointCloud<PointType> Result_cloud;
@@ -77,18 +78,24 @@ void Planner::pointCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     for (vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it){
         for (vector<int>::const_iterator pit = it->indices.begin(); pit != it->indices.end(); ++pit){
             PointType pt2;
-            pt2.x = cloud_filtered->points[*pit].x, pt2.y = cloud_filtered->points[*pit].y, pt2.z = cloud_filtered->points[*pit].z;
-            pt2.intensity = cloud_filtered->points[*pit].intensity;
+            pt2.x = cloud_filterd->points[*pit].x, pt2.y = cloud_filterd->points[*pit].y, pt2.z = cloud_filterd->points[*pit].z;
+            pt2.intensity = (float)(j+1);
 
             Result_cloud.push_back(pt2);
         }
         j++; 
     }
-    Result_cloud.header.frame_id = "velodyne";
-    pub_.publish(Result_cloud);
+    //Result_cloud.header.frame_id = "velodyne";    
+    //pub_.publish(cloud_filterd);p    
+    pcl::PCLPointCloud2 cloud_p;
+    pcl::toPCLPointCloud2(Result_cloud, cloud_p);
+
+    sensor_msgs::PointCloud2 result;
+    pcl_conversions::fromPCL(cloud_p, result);
+    result.header.frame_id = "velodyne";
+    pub_.publish(result);
 
 }
-
 int main(int argc, char **argv){
     ros::init(argc, argv, "Planner");
     Planner pn;
