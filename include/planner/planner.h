@@ -24,24 +24,23 @@
 
 #define GLOBAL_PATH_FILE "/home/hyeonbeen/path.txt"
 
+#define DIST_OBS_HP 3.0 // range to detect obstacles
+#define CLUSTER_HP 1.5 // distance to clustering between points
+
 using namespace std;
 
 typedef pcl::PointXYZI PointType;
+typedef pcl::PointXYZI VPoint;
 
 class OdomDouble {
 	private:
 		double x, y, z;
-		double o_x, o_y, o_z, o_w;
 
 	public:
-		OdomDouble(double x, double y, double z, double o_x, double o_y, double o_z, double o_w) {
+		OdomDouble(double x, double y, double z) {
 			this->x = x;
 			this->y = y;
 			this->z = z;
-			this->o_x = o_x;
-			this->o_y = o_y;
-			this->o_z = o_z;
-			this->o_w = o_w;
 		}
 
 		// getters
@@ -55,22 +54,6 @@ class OdomDouble {
 
 		double getZ() {
 			return this->z;
-		}
-
-		double getOX() {
-			return this->o_x;
-		}
-
-		double getOY() {
-			return this->o_y;
-		}
-
-		double getOZ() {
-			return this->o_z;
-		}
-
-		double getOW() {
-			return this->o_w;
 		}
 };
 
@@ -109,28 +92,22 @@ class Planner{
 private:
     ros::NodeHandle nh_;
     ros::Publisher pub_, point_pub_;
-    ros::Subscriber sub_, odom_sub_, point_sub_;
+    ros::Subscriber sub_, obstacle_sub_;
+
     double OFFSET_X = 0;
     double OFFSET_Y = 0;
     double odom_x, odom_y, odom_z;
     double pose_x, pose_y, pose_z, pose_w;
 	double roll, pitch, yaw, yaw_d;
 
-	vector<float> left_poly_;
-	vector<float> right_poly_;
-    vector<nav_msgs::Odometry> path_;
-
 	vector<OdomDouble> global_path_;
+	vector<OdomDouble> local_path_;
 
 public:
     void initSetup();
-    void pointCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
-    void odomCallback(const nav_msgs::Odometry::ConstPtr &odom_msgs);
-    double calcDistance(double * coef, pcl::PointXYZ object_point);
-    void setPlan(double* left_coef , double* right_coef, sensor_msgs::PointCloud2 objects);
-    tuple<double *, double *> getLine(pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr &cloud_XYZIR);
-	void visualize(vector<LanePoint> left_lane, vector<LanePoint> right_lane, vector<geometry_msgs::Point> waypoint);
-	pcl::PointXYZ getClosestObject(sensor_msgs::PointCloud2 object);
+    void setPlan();
 	vector<OdomDouble> loadGlobalPath();
 	void printGlobalPath(vector<OdomDouble>);
+	void obstacleCallback(const pcl::PointCloud<VPoint>::ConstPtr& obstacles);
+	void makeLocalPath(vector<vector<VPoint>> result_points);
 };

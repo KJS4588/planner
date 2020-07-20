@@ -35,5 +35,5 @@ private:
 
 public:
     void initSetup();
-	sensor_msgs::PointCloud2 clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input);
+	void clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input);
 };
