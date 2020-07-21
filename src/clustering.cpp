@@ -113,7 +113,7 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     double sum_y=0;
     double sum_z=0;
 	visualization_msgs::Marker mean_point;
-	mean_point.header.frame_id = "velodyne";
+	mean_point.header.frame_id = "map";
 	mean_point.header.stamp = ros::Time::now();
 	mean_point.ns = "points";
 	mean_point.action = visualization_msgs::Marker::ADD;
@@ -124,7 +124,8 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
 	mean_point.color.a = 1.0;
     mean_point.scale.x = 0.1;
     mean_point.scale.y = 0.1;
-
+	
+	vector<geometry_msgs::Point> mean_p;
     if (cluster_cloud2.size() != 0){
         for (size_t i=0; i<cluster_cloud2.size(); i++){
             cout << cluster_cloud2[i].x << endl;
@@ -141,6 +142,7 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
         p_.z = sum_z / cluster_cloud2.size();
 
         mean_point.points.push_back(p_);
+		mean_p.push_back(p_);
 		sum_x = 0; sum_y = 0; sum_z = 0;
     }
 
@@ -160,22 +162,22 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
         p_.z = sum_z / cluster_cloud1.size();
 
         mean_point.points.push_back(p_);
-
+		mean_p.push_back(p_);
     }
 
     point_pub_.publish(mean_point);
 
 	Result_cloud += cluster_cloud1;
 	Result_cloud += cluster_cloud2;
-	Result_cloud += cluster_cloud3;
-    
-
+	Result_cloud += cluster_cloud3; 
+	cout << mean_p.size() << endl;
+	
     pcl::PCLPointCloud2 cloud_p;
     pcl::toPCLPointCloud2(Result_cloud, cloud_p);
 
     sensor_msgs::PointCloud2 result;
     pcl_conversions::fromPCL(cloud_p, result);
-    result.header.frame_id = "velodyne";
+    result.header.frame_id = "map";
     pub_.publish(result);
 
 }
