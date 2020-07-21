@@ -28,46 +28,6 @@ void Planner::obstacleCallback(const pcl::PointCloud<VPoint>::ConstPtr& obstacle
 			obs_points.push_back(point);
 		}
 	}
-
-	vector<VPoint> obs_vector;
-	vector<vector<VPoint>> result_points;
-
-	cout << "############################" << endl;
-
-	for (int i=0;i<obs_points.size();i++) {
-		if (i != obs_points.size()-1) { // exclude the last point TODO:
-			double cur_x = obs_points.at(i).x;
-			double cur_y = obs_points.at(i).y;
-
-			double next_x = obs_points.at(i+1).x;
-			double next_y = obs_points.at(i+1).y;
-
-			double dist = sqrt(pow(cur_x-next_x, 2) + pow(cur_y-next_y, 2));
-
-			if (dist < CLUSTER_HP) {
-				obs_vector.push_back(obs_points.at(i));
-			} else {
-				obs_vector.push_back(obs_points.at(i));
-				result_points.push_back(obs_vector);
-				obs_vector.clear();
-			}
-		}
-	}
-
-	cout << "result_points_size -> " << result_points.size() << endl;
-
-	for (int i=0;i<result_points.size();i++) {
-
-		for (auto point : result_points.at(i)) {
-			cout << point << endl;
-		}
-
-		cout << "index -> " << i << endl;
-		cout << endl;
-	}
-
-	cout << "############################" << endl;
-
 	// makeLocalPath(result_points);
 }
 
