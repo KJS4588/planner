@@ -1,6 +1,16 @@
 #include "planner/clustering.h"
 
+<<<<<<< HEAD
 vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
+=======
+void Cluster::initSetup(){
+    point_sub_ = nh_.subscribe("/aligned_points", 10, &Cluster::clusterCallback, this);
+    pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_filtered", 10);
+    point_pub_ = nh_.advertise<visualization_msgs::Marker>("/mean_point",10);
+}
+
+void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
+>>>>>>> 57d36216ccf65a0ee8f8c32725067aa5f3f89b9a
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);
@@ -13,21 +23,16 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
     condrem.setKeepOrganized(false);       //
     condrem.filter (*cloud_filterd);     //필터 적용 
     */
-
+	
     pcl::PassThrough<PointType> pass;
     pass.setInputCloud(cloud);
     pass.setFilterFieldName ("x");
-    pass.setFilterLimits(-4, 4);
+    pass.setFilterLimits(10, 20);
     pass.filter(*cloud);
     
     pass.setInputCloud(cloud);
     pass.setFilterFieldName("y");
-    pass.setFilterLimits(-4, 4);
-    pass.filter(*cloud);
-	
-	pass.setInputCloud(cloud);
-    pass.setFilterFieldName("z");
-    pass.setFilterLimits(-1, 1000);
+    pass.setFilterLimits(-1.5, 2);
     pass.filter(*cloud);
 
 
@@ -63,8 +68,8 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
 
     vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<PointType> ec;
-    ec.setClusterTolerance(0.3); //20cm
-    ec.setMinClusterSize(100);
+    ec.setClusterTolerance(1); //30cm
+    ec.setMinClusterSize(6);
     ec.setMaxClusterSize(25000);
     ec.setSearchMethod(tree);
     ec.setInputCloud(cloud_filterd);
@@ -102,6 +107,7 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
 		}
         j++; 
     }
+	/*
     double sum_x=0; 
     double sum_y=0;
     double sum_z=0;
@@ -158,15 +164,19 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
 		mean_p.push_back(p_);
     }
 
+<<<<<<< HEAD
     //point_pub_.publish(mean_point);
 	return mean_p;
 
+=======
+    point_pub_.publish(mean_point); */
+>>>>>>> 57d36216ccf65a0ee8f8c32725067aa5f3f89b9a
 
 	// never happen
 	Result_cloud += cluster_cloud1;
 	Result_cloud += cluster_cloud2;
 	Result_cloud += cluster_cloud3; 
-	cout << mean_p.size() << endl;
+	//cout << mean_p.size() << endl;
 	
     pcl::PCLPointCloud2 cloud_p;
     pcl::toPCLPointCloud2(Result_cloud, cloud_p);
