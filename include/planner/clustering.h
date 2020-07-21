@@ -18,12 +18,12 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/features/normal_3d.h>
 
-
+#include "visualization_msgs/Marker.h"
 #include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
 
 #include "cmath"
-
+#include "vector"
 using namespace std;
 typedef pcl::PointXYZI PointType;
 
@@ -35,5 +35,5 @@ private:
 
 public:
     void initSetup();
-	void clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input);
+    void clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input);
 };

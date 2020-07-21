@@ -1,11 +1,10 @@
 #include "planner/clustering.h"
 
-
 void Cluster::initSetup(){
     point_sub_ = nh_.subscribe("/velodyne_points", 10, &Cluster::clusterCallback, this);
     pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_filtered", 10);
+    point_pub_ = nh_.advertise<visualization_msgs::Marker>("/mean_point",10);
 }
-
 
 void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
@@ -32,13 +31,18 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     pass.setFilterFieldName("y");
     pass.setFilterLimits(-4, 4);
     pass.filter(*cloud);
-    
+	
+	pass.setInputCloud(cloud);
+    pass.setFilterFieldName("z");
+    pass.setFilterLimits(-1, 1000);
+    pass.filter(*cloud);
+
+
     pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
     pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
     // Create a pcl object to hold the ransac filtered object
     pcl::PointCloud<PointType>::Ptr cloud_plane (new pcl::PointCloud<PointType>()); 
     
-
     pcl::SACSegmentation<PointType> seg;
     
     seg.setOptimizeCoefficients (true);
@@ -105,11 +109,67 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
 		}
         j++; 
     }
-	
+    double sum_x=0; 
+    double sum_y=0;
+    double sum_z=0;
+	visualization_msgs::Marker mean_point;
+	mean_point.header.frame_id = "velodyne";
+	mean_point.header.stamp = ros::Time::now();
+	mean_point.ns = "points";
+	mean_point.action = visualization_msgs::Marker::ADD;
+	mean_point.type = visualization_msgs::Marker::POINTS;
+	mean_point.pose.orientation.w = 1;
+	mean_point.id = 0;
+	mean_point.color.g = 1.0f; 
+	mean_point.color.a = 1.0;
+    mean_point.scale.x = 0.1;
+    mean_point.scale.y = 0.1;
+
+    if (cluster_cloud2.size() != 0){
+        for (size_t i=0; i<cluster_cloud2.size(); i++){
+            cout << cluster_cloud2[i].x << endl;
+            sum_x += cluster_cloud2[i].x;
+            sum_y += cluster_cloud2[i].y;
+            sum_z += cluster_cloud2[i].z;
+        
+        }
+    
+        geometry_msgs::Point p_;
+
+        p_.x = sum_x / cluster_cloud2.size();
+        p_.y = sum_y / cluster_cloud2.size();
+        p_.z = sum_z / cluster_cloud2.size();
+
+        mean_point.points.push_back(p_);
+		sum_x = 0; sum_y = 0; sum_z = 0;
+    }
+
+	if (cluster_cloud1.size() != 0){
+        for (size_t i=0; i<cluster_cloud1.size(); i++){
+            cout << cluster_cloud1[i].x << endl;
+            sum_x += cluster_cloud1[i].x;
+            sum_y += cluster_cloud1[i].y;
+            sum_z += cluster_cloud1[i].z;
+        
+        }
+    
+        geometry_msgs::Point p_;
+
+        p_.x = sum_x / cluster_cloud1.size();
+        p_.y = sum_y / cluster_cloud1.size();
+        p_.z = sum_z / cluster_cloud1.size();
+
+        mean_point.points.push_back(p_);
+
+    }
+
+    point_pub_.publish(mean_point);
+
 	Result_cloud += cluster_cloud1;
 	Result_cloud += cluster_cloud2;
 	Result_cloud += cluster_cloud3;
-	
+    
+
     pcl::PCLPointCloud2 cloud_p;
     pcl::toPCLPointCloud2(Result_cloud, cloud_p);
 
@@ -117,14 +177,13 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl_conversions::fromPCL(cloud_p, result);
     result.header.frame_id = "velodyne";
     pub_.publish(result);
-//	return result;
 
 }
-/*
+
 int main(int argc, char **argv){
     ros::init(argc, argv, "Cluster");
     Cluster cl;
     cl.initSetup();
     ros::spin();
-}*/
+}
 
