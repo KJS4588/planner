@@ -28,12 +28,7 @@ using namespace std;
 typedef pcl::PointXYZI PointType;
 
 class Cluster {
-private:
-    ros::NodeHandle nh_;
-    ros::Publisher pub_, point_pub_, acker_pub_;
-    ros::Subscriber sub_, odom_sub_, point_sub_;
 
 public:
-    void initSetup();
-    void clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input);
+	vector<geometry_msgs::Point> cluster(const sensor_msgs::PointCloud2ConstPtr &input);
 };

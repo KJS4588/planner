@@ -6,30 +6,19 @@
 
 
 void Planner::initSetup(){
-    obstacle_sub_ = nh_.subscribe("/velodyne_obstacles", 10, &Planner::obstacleCallback, this);
-
+	//aligned_sub_ = nh_.subscribe("/aligned_points", 10, &Planner::alignedCallback, this);
     point_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cluster_object", 10);
-
-	global_path_ = loadGlobalPath();
+    marker_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_marker", 10);
+	loadGlobalPath();
 }
 
-// detect obstacles
-void Planner::obstacleCallback(const pcl::PointCloud<VPoint>::ConstPtr& obstacles) {
 
-	vector<VPoint> obs_points;
-
-	for (auto point : *obstacles) {
-		double o_x = point.x;
-		double o_y = point.y;
-
-		double dist = sqrt(o_x*o_x + o_y*o_y);
-
-		if (dist < DIST_OBS_HP) {
-			obs_points.push_back(point);
-		}
-	}
-	// makeLocalPath(result_points);
+/*
+void Planner::alignedCallback(const vector<geometry_msgs::Point> localPoints){
+	visualize(global_path_);
 }
+*/
+
 
 // make local path
 void Planner::makeLocalPath(vector<vector<VPoint>> points) {
@@ -41,9 +30,7 @@ void Planner::setPlan() {
 	return;
 }
 
-vector<OdomDouble> Planner::loadGlobalPath() {
-	vector<OdomDouble> path;
-
+void Planner::loadGlobalPath() {
 	ifstream file;
 	file.open(GLOBAL_PATH_FILE);
 
@@ -62,20 +49,38 @@ vector<OdomDouble> Planner::loadGlobalPath() {
 			}
 
 			OdomDouble odomDouble(stod(odomString.at(0)), stod(odomString.at(1)), stod(odomString.at(2)));
-			path.push_back(odomDouble);
+			global_path_.push_back(odomDouble);
 		}
 
 		file.close();
 	}
-
-	printGlobalPath(path);
-
-	return path;
 }
 
-void Planner::printGlobalPath(vector<OdomDouble> path) {
-	cout << "global path loaded successfully" << endl;
-	cout << endl;
+void Planner::visualize(vector<OdomDouble> global_path){
+	visualization_msgs::Marker points;
+
+	points.header.frame_id = "map";
+	points.header.stamp = ros::Time::now();
+	points.ns = "points_and_lines";
+	points.action = visualization_msgs::Marker::ADD;
+	points.pose.orientation.w = 1.0;
+	points.id = 0;
+	points.type = visualization_msgs::Marker::POINTS;
+	points.scale.x = 0.1; 
+	points.scale.y = 0.1;
+	points.color.a = 1.0;
+	points.color.r = 1.0f;
+
+	geometry_msgs::Point p;
+
+	for (auto point : global_path) {
+		p.x = point.getX();
+		p.y = point.getY();
+		p.z = point.getZ();
+		points.points.push_back(p);
+	}
+
+	marker_pub_.publish(points);
 }
 
 int main(int argc, char **argv){

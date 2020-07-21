@@ -1,19 +1,12 @@
 #include "planner/clustering.h"
 
-void Cluster::initSetup(){
-    point_sub_ = nh_.subscribe("/velodyne_points", 10, &Cluster::clusterCallback, this);
-    pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_filtered", 10);
-    point_pub_ = nh_.advertise<visualization_msgs::Marker>("/mean_point",10);
-}
-
-void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
+vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);
 
     /*pcl::ConditionAnd<PointType>::Ptr range_cond (new pcl::ConditionAnd<PointType>());
-    range_cond->addComparison (pcl::FieldComparison<PointType>::ConstPtr (new pcl::FieldComparison<PointType> ("z", pcl::ComparisonOps::GT, 0.0)));  //eg. z축으로 0.00보다 큰값(GT:Greater Than)
-    range_cond->addComparison (pcl::FieldComparison<PointType>::ConstPtr (new pcl::FieldComparison<PointType> ("z", pcl::ComparisonOps::LT, 0.8)));  //eg. z축으로 0.08보다 작은값(LT:Less Than)
+    range_cond->addComparison (pcl::FieldComparison<PointType>::ConstPtr (new pcl::FieldComparison<PointType> ("z", pcl::ComparisonOps::GT, 0.0)));  //eg. z축으로 0.00보다 큰값(GT:Greater Than) range_cond->addComparison (pcl::FieldComparison<PointType>::ConstPtr (new pcl::FieldComparison<PointType> ("z", pcl::ComparisonOps::LT, 0.8)));  //eg. z축으로 0.08보다 작은값(LT:Less Than)
     pcl::ConditionalRemoval<PointType> condrem;
     condrem.setInputCloud (cloud);        //입력 
     condrem.setCondition (range_cond);    //조건 설정  
@@ -165,8 +158,11 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
 		mean_p.push_back(p_);
     }
 
-    point_pub_.publish(mean_point);
+    //point_pub_.publish(mean_point);
+	return mean_p;
 
+
+	// never happen
 	Result_cloud += cluster_cloud1;
 	Result_cloud += cluster_cloud2;
 	Result_cloud += cluster_cloud3; 
@@ -178,14 +174,6 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
     sensor_msgs::PointCloud2 result;
     pcl_conversions::fromPCL(cloud_p, result);
     result.header.frame_id = "map";
-    pub_.publish(result);
-
-}
-
-int main(int argc, char **argv){
-    ros::init(argc, argv, "Cluster");
-    Cluster cl;
-    cl.initSetup();
-    ros::spin();
+    //pub_.publish(result);
 }
 

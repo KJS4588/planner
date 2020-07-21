@@ -12,6 +12,7 @@
 #include "pcl/io/pcd_io.h"
 
 #include "visualization_msgs/Marker.h"
+#include "geometry_msgs/Point.h"
 #include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
 
@@ -21,6 +22,8 @@
 #include <iostream>
 #include <string>
 #include <stdlib.h>
+
+#include "planner/OdomDouble.h"
 
 #define GLOBAL_PATH_FILE "/home/hyeonbeen/path.txt"
 
@@ -32,67 +35,16 @@ using namespace std;
 typedef pcl::PointXYZI PointType;
 typedef pcl::PointXYZI VPoint;
 
-class OdomDouble {
-	private:
-		double x, y, z;
-
-	public:
-		OdomDouble(double x, double y, double z) {
-			this->x = x;
-			this->y = y;
-			this->z = z;
-		}
-
-		// getters
-		double getX() {
-			return this->x;
-		}
-
-		double getY() {
-			return this->y;
-		}
-
-		double getZ() {
-			return this->z;
-		}
-};
-
-class LanePoint{
-	public:
-		float x, y;
-		int layer;
-
-		LanePoint() { }
-
-		LanePoint(float x, float y, int layer) {
-			this->x = x;
-			this->y = y;
-			this->layer = layer;
-		}
-};
-
-
-class Point {
-    public:
-        float x,y,z,intensity;
-        int clusterID, layer;
-
-	    Point() {};
-
-        Point(float x, float y, float z, float intensity, int layer) {
-		    this->x = x;
-		    this->y = y;
-		    this->z = z;
-		    this->intensity = intensity;
-		    this->layer = layer;
-	    };
-};
-
 class Planner{
 private:
     ros::NodeHandle nh_;
-    ros::Publisher pub_, point_pub_;
-    ros::Subscriber sub_, obstacle_sub_;
+
+    ros::Publisher pub_;
+    ros::Publisher point_pub_;
+    ros::Publisher marker_pub_;
+
+    ros::Subscriber sub_;
+    //ros::Subscriber aligned_sub_;
 
     double OFFSET_X = 0;
     double OFFSET_Y = 0;
@@ -105,9 +57,12 @@ private:
 
 public:
     void initSetup();
-    void setPlan();
-	vector<OdomDouble> loadGlobalPath();
-	void printGlobalPath(vector<OdomDouble>);
-	void obstacleCallback(const pcl::PointCloud<VPoint>::ConstPtr& obstacles);
+
+	//void alignedCallback(vector<geometry_msgs::Point> localPoints);
+
 	void makeLocalPath(vector<vector<VPoint>> result_points);
+    void setPlan();
+	void loadGlobalPath();
+	
+	void visualize(vector<OdomDouble> global_path);
 };
