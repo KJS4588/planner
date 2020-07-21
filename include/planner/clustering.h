@@ -28,7 +28,6 @@ using namespace std;
 typedef pcl::PointXYZI PointType;
 
 class Cluster {
-
-public:
-	vector<geometry_msgs::Point> cluster(const sensor_msgs::PointCloud2ConstPtr &input);
+	public:
+		void cluster(const sensor_msgs::PointCloud2ConstPtr &input);
 };

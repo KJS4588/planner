@@ -1,16 +1,6 @@
 #include "planner/clustering.h"
 
-<<<<<<< HEAD
-vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
-=======
-void Cluster::initSetup(){
-    point_sub_ = nh_.subscribe("/aligned_points", 10, &Cluster::clusterCallback, this);
-    pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cloud_filtered", 10);
-    point_pub_ = nh_.advertise<visualization_msgs::Marker>("/mean_point",10);
-}
-
-void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
->>>>>>> 57d36216ccf65a0ee8f8c32725067aa5f3f89b9a
+void Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);
@@ -164,13 +154,10 @@ void Cluster::clusterCallback(const sensor_msgs::PointCloud2ConstPtr &input){
 		mean_p.push_back(p_);
     }
 
-<<<<<<< HEAD
     //point_pub_.publish(mean_point);
 	return mean_p;
 
-=======
     point_pub_.publish(mean_point); */
->>>>>>> 57d36216ccf65a0ee8f8c32725067aa5f3f89b9a
 
 	// never happen
 	Result_cloud += cluster_cloud1;

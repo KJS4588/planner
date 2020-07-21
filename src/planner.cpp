@@ -6,19 +6,10 @@
 
 
 void Planner::initSetup(){
-	//aligned_sub_ = nh_.subscribe("/aligned_points", 10, &Planner::alignedCallback, this);
     point_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cluster_object", 10);
     marker_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_marker", 10);
 	loadGlobalPath();
 }
-
-
-/*
-void Planner::alignedCallback(const vector<geometry_msgs::Point> localPoints){
-	visualize(global_path_);
-}
-*/
-
 
 // make local path
 void Planner::makeLocalPath(vector<vector<VPoint>> points) {
