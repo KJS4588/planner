@@ -1,6 +1,6 @@
 #include "planner/clustering.h"
 
-void Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
+vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);

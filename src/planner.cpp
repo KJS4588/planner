@@ -8,7 +8,14 @@
 void Planner::initSetup(){
     point_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cluster_object", 10);
     marker_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_marker", 10);
+
+	aligned_sub_ = nh_.subscribe("/aligned_points", 10, &Planner::alignedCallback, this);
+
 	loadGlobalPath();
+}
+
+void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
+	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points);
 }
 
 // make local path

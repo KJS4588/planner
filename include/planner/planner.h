@@ -1,6 +1,4 @@
 #include "ros/ros.h"
-#include "planner/polyfit.h"
-#include "planner/polyfit.c"
 
 #include "sensor_msgs/PointCloud2.h"
 #include "pcl_conversions/pcl_conversions.h"
@@ -39,12 +37,10 @@ class Planner{
 private:
     ros::NodeHandle nh_;
 
-    ros::Publisher pub_;
     ros::Publisher point_pub_;
     ros::Publisher marker_pub_;
 
-    ros::Subscriber sub_;
-    //ros::Subscriber aligned_sub_;
+    ros::Subscriber aligned_sub_;
 
     double OFFSET_X = 0;
     double OFFSET_Y = 0;
@@ -58,7 +54,7 @@ private:
 public:
     void initSetup();
 
-	//void alignedCallback(vector<geometry_msgs::Point> localPoints);
+	void alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points);
 
 	void makeLocalPath(vector<vector<VPoint>> result_points);
     void setPlan();
