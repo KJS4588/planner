@@ -56,9 +56,9 @@ public:
 
 	void alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points);
 
-	void makeLocalPath(vector<vector<VPoint>> result_points);
     void setPlan();
 	void loadGlobalPath();
+	void calcDistance();
 	
 	void visualize(vector<OdomDouble> global_path);
 };

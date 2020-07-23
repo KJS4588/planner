@@ -16,16 +16,41 @@ void Planner::initSetup(){
 
 void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
 	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points);
-}
 
-// make local path
-void Planner::makeLocalPath(vector<vector<VPoint>> points) {
+	if (obs_points.size() > 0) {
+		int closest_index_0 = getClosestPoint(obs_points.at(0));
+		int closest_index_1 = getClosestPoint(obs_points.at(1));
+
+		
+	}
 
 }
 
 // set final path using global path and local path
 void Planner::setPlan() {
+
 	return;
+}
+
+//return index
+int Planner::getClosestPoint(geometry_msgs::Point p) {
+	
+	int result_index = -1; 
+	double distance = 100.0;
+
+	for(int i=0;i<global_path_.size();i++) {
+		if(distance > getDist(p, global_path_.at(i))) {
+			distance = getDist(p, global_path_.at(i));
+			result_index = i;
+		}
+	}
+
+	return result_index;
+}
+
+template <class T>
+T Planner::getDist(T point_1, T point_2){
+	return sqrt(pow(point_1.x - point_2.x) + pow(point_1.y - point_2.y));
 }
 
 void Planner::loadGlobalPath() {

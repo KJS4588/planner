@@ -17,7 +17,7 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
     pcl::PassThrough<PointType> pass;
     pass.setInputCloud(cloud);
     pass.setFilterFieldName ("x");
-    pass.setFilterLimits(10, 20);
+    pass.setFilterLimits(-9, -5);
     pass.filter(*cloud);
     
     pass.setInputCloud(cloud);
@@ -66,6 +66,7 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
     ec.extract(cluster_indices);
 
 
+    cloud_filterd->header.frame_id = "map";
     pcl::PointCloud<PointType> cluster_cloud1, cluster_cloud2, cluster_cloud3, Result_cloud;
     cout << "Number of clusters is equal to " << cluster_indices.size() << endl;
     int j = 0;
@@ -97,7 +98,7 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
 		}
         j++; 
     }
-	/*
+
     double sum_x=0; 
     double sum_y=0;
     double sum_z=0;
@@ -157,9 +158,13 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
     //point_pub_.publish(mean_point);
 	return mean_p;
 
-    point_pub_.publish(mean_point); */
 
-	// never happen
+	///////////////////////////////////////////////////////////////
+
+	// never happen below
+
+    //point_pub_.publish(mean_point);
+
 	Result_cloud += cluster_cloud1;
 	Result_cloud += cluster_cloud2;
 	Result_cloud += cluster_cloud3; 
