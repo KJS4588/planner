@@ -7,8 +7,6 @@
 
 void Planner::initSetup(){
     point_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cluster_object", 10);
-    marker_pub_ = nh_.advertise<visualization_msgs::Marker>("/visualization_marker", 10);
-
 	aligned_sub_ = nh_.subscribe("/aligned_points", 10, &Planner::alignedCallback, this);
 
 	loadGlobalPath();
@@ -17,23 +15,66 @@ void Planner::initSetup(){
 void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
 	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points);
 
-	if (obs_points.size() > 0) {
-		int closest_index_0 = getClosestPoint(obs_points.at(0));
-		int closest_index_1 = getClosestPoint(obs_points.at(1));
+	if (obs_points.size() > 1) { // obstacle detected -> set new global path
+		if (obs_detect_flag_ < 1) { // execute below only once
 
+			double m = getLinearValues().at(0);
+			double n = getLinearValues().at(1);
+			
+			// closer symmetric point
+			double x_1 = obs_points.at(0).x - 2*m*(m*obs_points.at(0).x - obs_points.at(0).y + n) / (m*m + 1);
+			double y_1 = obs_points.at(0).y + 2*(m*obs_points.at(0).x - obs_points.at(0).y + n) / (m*m + 1);
+
+			// farther symmetric point
+			double x_2 = obs_points.at(1).x - 2*m*(m*obs_points.at(1).x - obs_points.at(1).y + n) / (m*m + 1);
+			double y_2 = obs_points.at(1).y + 2*(m*obs_points.at(1).x - obs_points.at(1).y + n) / (m*m + 1);
 		
-	}
+			// mean point of symmetric points
+			double mean_x = (x_1 + x_2) / 2;
+			double mean_y = (y_1 + y_2) / 2;
 
+			// closest index of global path from first obstacle
+			int closest_index = getClosestPointIndex(obs_points.at(0));
+
+			// keep the last point of global_path
+			OdomDouble g_last = global_path_.back();
+
+			// erase points in global_path
+			int count = 0;
+
+			while(count < global_path_.size()-closest_index-1) {
+				global_path_.pop_back();
+				count++;
+			}
+
+			// add new path to global_path
+			global_path_.push_back(OdomDouble(x_1, y_1));
+			global_path_.push_back(OdomDouble(mean_x, mean_y));
+			global_path_.push_back(OdomDouble(x_2, y_2));
+			global_path_.push_back(g_last);
+
+			savePath();
+
+			nh_.setParam("/isGlobalPathChanged", true);
+			obs_detect_flag_++;
+		}
+	}
 }
 
-// set final path using global path and local path
-void Planner::setPlan() {
+// return a and b of linear
+vector<double> Planner::getLinearValues() {
+	double m = (global_path_.back().getY()-global_path_.front().getY()) / (global_path_.back().getX()-global_path_.front().getX());
+	double n = -global_path_.front().getX()*m + global_path_.front().getY();
 
-	return;
+	vector<double> result;
+	result.push_back(m);
+	result.push_back(n);
+
+	return result;
 }
 
 //return index
-int Planner::getClosestPoint(geometry_msgs::Point p) {
+int Planner::getClosestPointIndex(geometry_msgs::Point p) {
 	
 	int result_index = -1; 
 	double distance = 100.0;
@@ -48,9 +89,8 @@ int Planner::getClosestPoint(geometry_msgs::Point p) {
 	return result_index;
 }
 
-template <class T>
-T Planner::getDist(T point_1, T point_2){
-	return sqrt(pow(point_1.x - point_2.x) + pow(point_1.y - point_2.y));
+double Planner::getDist(geometry_msgs::Point point_1, OdomDouble point_2){
+	return sqrt(pow(point_1.x - point_2.getX() , 2) + pow(point_1.y - point_2.getY() , 2));
 }
 
 void Planner::loadGlobalPath() {
@@ -76,35 +116,44 @@ void Planner::loadGlobalPath() {
 		}
 
 		file.close();
+		cout << endl;
+		cout << "load success" << endl;;
+		cout << global_path_.size() << endl;
+		cout << endl;
 	}
 }
 
-void Planner::visualize(vector<OdomDouble> global_path){
-	visualization_msgs::Marker points;
-
-	points.header.frame_id = "map";
-	points.header.stamp = ros::Time::now();
-	points.ns = "points_and_lines";
-	points.action = visualization_msgs::Marker::ADD;
-	points.pose.orientation.w = 1.0;
-	points.id = 0;
-	points.type = visualization_msgs::Marker::POINTS;
-	points.scale.x = 0.1; 
-	points.scale.y = 0.1;
-	points.color.a = 1.0;
-	points.color.r = 1.0f;
-
-	geometry_msgs::Point p;
-
-	for (auto point : global_path) {
-		p.x = point.getX();
-		p.y = point.getY();
-		p.z = point.getZ();
-		points.points.push_back(p);
+void Planner::savePath() {
+	if (access(NEW_GLOBAL_PATH_FILE, 0) == 0) {
+		int result = remove(NEW_GLOBAL_PATH_FILE);
 	}
 
-	marker_pub_.publish(points);
+    cout << "Obstacles detected" << endl;
+    cout << "start saving new path..." << endl;
+    
+    ofstream file(NEW_GLOBAL_PATH_FILE);
+
+    for (auto odom : this->global_path_) {
+        double x = odom.getX();
+        double y = odom.getY();
+        double z = odom.getZ();
+
+        if (file.is_open()) {
+            string row = to_string(x) + "," + to_string(y) + "," + to_string(z) + "\n";
+            file << row;
+        }
+    }
+
+    file.close();
+
+	cout << endl;
+    cout << "--- saved new path successfully ---" << endl;
+    cout << "text file path -> " << NEW_GLOBAL_PATH_FILE << endl;
+    cout << "path size -> " << to_string(this->global_path_.size()) << endl;
+    cout << "-------------------------------" << endl;
+	cout << endl;
 }
+
 
 int main(int argc, char **argv){
     ros::init(argc, argv, "planner");

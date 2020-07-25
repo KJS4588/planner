@@ -9,6 +9,12 @@ class OdomDouble {
 			this->z = 0.0;
 		}
 
+		OdomDouble(double x, double y) {
+			this->x = x;
+			this->y = y;
+			this->z = 0.0;
+		}
+
 		// getters
 		double getX() {
 			return this->x;

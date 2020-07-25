@@ -15,6 +15,7 @@
 #include "tf/tf.h"
 
 #include "cmath"
+#include "math.h"
 #include "tuple"
 
 #include <iostream>
@@ -24,6 +25,7 @@
 #include "planner/OdomDouble.h"
 
 #define GLOBAL_PATH_FILE "/home/hyeonbeen/path.txt"
+#define NEW_GLOBAL_PATH_FILE "/home/hyeonbeen/new_path.txt"
 
 #define DIST_OBS_HP 3.0 // range to detect obstacles
 #define CLUSTER_HP 1.5 // distance to clustering between points
@@ -51,6 +53,8 @@ private:
 	vector<OdomDouble> global_path_;
 	vector<OdomDouble> local_path_;
 
+    int obs_detect_flag_ = 0;
+
 public:
     void initSetup();
 
@@ -59,6 +63,9 @@ public:
     void setPlan();
 	void loadGlobalPath();
 	void calcDistance();
-	
+	vector<double> getLinearValues();
+	int getClosestPointIndex(geometry_msgs::Point p);
 	void visualize(vector<OdomDouble> global_path);
+	double getDist(geometry_msgs::Point point_1, OdomDouble p );
+    void savePath();
 };

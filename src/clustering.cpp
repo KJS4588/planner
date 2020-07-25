@@ -17,12 +17,12 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
     pcl::PassThrough<PointType> pass;
     pass.setInputCloud(cloud);
     pass.setFilterFieldName ("x");
-    pass.setFilterLimits(-9, -5);
+    pass.setFilterLimits(-7, -3);
     pass.filter(*cloud);
     
     pass.setInputCloud(cloud);
     pass.setFilterFieldName("y");
-    pass.setFilterLimits(-1.5, 2);
+    pass.setFilterLimits(-2, 0);
     pass.filter(*cloud);
 
 
