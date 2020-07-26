@@ -42,16 +42,16 @@ private:
     ros::Publisher point_pub_;
     ros::Publisher marker_pub_;
 
-    ros::Subscriber aligned_sub_;
+    ros::Subscriber aligned_sub_, odom_sub_;
 
     double OFFSET_X = 0;
     double OFFSET_Y = 0;
     double odom_x, odom_y, odom_z;
     double pose_x, pose_y, pose_z, pose_w;
 	double roll, pitch, yaw, yaw_d;
+	double lx, ly, lz;
 
 	vector<OdomDouble> global_path_;
-	vector<OdomDouble> local_path_;
 
     int obs_detect_flag_ = 0;
 
@@ -65,7 +65,9 @@ public:
 	void calcDistance();
 	vector<double> getLinearValues();
 	int getClosestPointIndex(geometry_msgs::Point p);
-	void visualize(vector<OdomDouble> global_path);
+	void visualize(vector<geometry_msgs::Point> obs_points);
 	double getDist(geometry_msgs::Point point_1, OdomDouble p );
+	double getDist(geometry_msgs::Point point_1, geometry_msgs::Point point_2);
     void savePath();
+	void odomCallback(const nav_msgs::Odometry::ConstPtr &odomsg);
 };
