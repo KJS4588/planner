@@ -1,6 +1,6 @@
 #include "planner/clustering.h"
 
-vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input){
+vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2ConstPtr &input, double x_min, double x_max, double y_min, double y_max){
     pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>), cloud_filterd (new pcl::PointCloud<PointType>);
 
     pcl::fromROSMsg(*input, *cloud);
@@ -17,12 +17,12 @@ vector<geometry_msgs::Point> Cluster::cluster(const sensor_msgs::PointCloud2Cons
     pcl::PassThrough<PointType> pass;
     pass.setInputCloud(cloud);
     pass.setFilterFieldName ("x");
-    pass.setFilterLimits(-9, -3);
+    pass.setFilterLimits(x_min, x_max);
     pass.filter(*cloud);
     
     pass.setInputCloud(cloud);
     pass.setFilterFieldName("y");
-    pass.setFilterLimits(-2, 0);
+    pass.setFilterLimits(y_min, y_max);
     pass.filter(*cloud);
 
 

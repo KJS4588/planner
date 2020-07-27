@@ -29,5 +29,5 @@ typedef pcl::PointXYZI PointType;
 
 class Cluster {
 	public:
-		vector<geometry_msgs::Point> cluster(const sensor_msgs::PointCloud2ConstPtr &input);
+		vector<geometry_msgs::Point> cluster(const sensor_msgs::PointCloud2ConstPtr &input, double x_min, double x_max, double y_min, double y_max);
 };

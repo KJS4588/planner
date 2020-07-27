@@ -18,7 +18,7 @@ void Planner::odomCallback(const nav_msgs::Odometry::ConstPtr &odomsg){
 }
 
 void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
-	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points);
+	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, -5, 5, -2.0, 2);
 	visualize(obs_points);
 
 	if (obs_points.size() > 1) { // obstacle detected -> set new global path
