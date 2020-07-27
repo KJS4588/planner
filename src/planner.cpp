@@ -18,10 +18,10 @@ void Planner::odomCallback(const nav_msgs::Odometry::ConstPtr &odomsg){
 }
 
 void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
-	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, -5, 5, -2.0, 2);
+	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, -5, 3, -4.0, 1);
 	visualize(obs_points);
 
-	if (obs_points.size() > 1) { // obstacle detected -> set new global path
+	if (obs_points.size() >= 2) { // two obstacles detected -> set new global path
 		if (obs_detect_flag_ < 1) { // execute below only once
 
 			double m = getLinearValues().at(0);
@@ -63,7 +63,7 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			int count = 0;
 			int origin_size_global_path = global_path_.size();
 
-			while(count < origin_size_global_path-closest_index+1) {
+			while(count < origin_size_global_path-closest_index+4) {
 				global_path_.pop_back();
 				count++;
 			}
@@ -71,9 +71,16 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			cout << "resized 1 global path -> " << global_path_.size() << endl;
 
 			// add new path to global_path
-			global_path_.push_back(OdomDouble(x_1, y_1));
-			global_path_.push_back(OdomDouble(mean_x, mean_y));
-			global_path_.push_back(OdomDouble(x_2, y_2));
+			if (closest_obs_index == 0) {
+				global_path_.push_back(OdomDouble(x_1, y_1));
+				global_path_.push_back(OdomDouble(mean_x, mean_y));
+				global_path_.push_back(OdomDouble(x_2, y_2));
+			}else {
+				global_path_.push_back(OdomDouble(x_2, y_2));
+				global_path_.push_back(OdomDouble(mean_x, mean_y));
+				global_path_.push_back(OdomDouble(x_1, y_1));
+			}
+
 			global_path_.push_back(g_last);
 
 			cout << "resized 2 global path -> " << global_path_.size() << endl;
