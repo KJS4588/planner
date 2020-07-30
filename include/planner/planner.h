@@ -64,6 +64,7 @@ public:
 	void loadGlobalPath();
 	void calcDistance();
 	vector<double> getLinearValues();
+	vector<double> getLinearValues(geometry_msgs::Point p, int x_front, int y_front);
 	int getClosestPointIndex(geometry_msgs::Point p);
 	void visualize(vector<geometry_msgs::Point> obs_points);
 	double getDist(geometry_msgs::Point point_1, OdomDouble p );

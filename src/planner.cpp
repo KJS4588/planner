@@ -18,7 +18,7 @@ void Planner::odomCallback(const nav_msgs::Odometry::ConstPtr &odomsg){
 }
 
 void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
-	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, -5, 3, -4.0, 1);
+	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, 8.5, 14, 3, 7);
 	visualize(obs_points);
 
 	if (obs_points.size() >= 2) { // two obstacles detected -> set new global path
@@ -67,15 +67,29 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 				global_path_.pop_back();
 				count++;
 			}
-
+		
 			cout << "resized 1 global path -> " << global_path_.size() << endl;
 
 			// add new path to global_path
 			if (closest_obs_index == 0) {
+				double a = getLinearValues(obs_points.at(0), x_1, y_1).at(0);
+				double b = getLinearValues(obs_points.at(0), x_1, y_1).at(1);
+				
+				double x_3 = obs_points.at(1).x - 2*a*(a*obs_points.at(1).x - obs_points.at(1).y + b) / (a*a + 1);
+				double y_3 = obs_points.at(1).y + 2*(a*obs_points.at(1).x - obs_points.at(1).y + b) / (a*a + 1);
+				
+				global_path_.push_back(OdomDouble(x_3, y_3));
 				global_path_.push_back(OdomDouble(x_1, y_1));
 				global_path_.push_back(OdomDouble(mean_x, mean_y));
 				global_path_.push_back(OdomDouble(x_2, y_2));
 			}else {
+				double a = getLinearValues(obs_points.at(1), x_2, y_2).at(0);
+				double b = getLinearValues(obs_points.at(1), x_2, y_2).at(1);
+				
+				double x_3 = obs_points.at(0).x - 2*a*(a*obs_points.at(0).x - obs_points.at(0).y + b) / (a*a + 1);
+				double y_3 = obs_points.at(0).y + 2*(a*obs_points.at(0).x - obs_points.at(0).y + b) / (a*a + 1);
+				
+				global_path_.push_back(OdomDouble(x_3, y_3));
 				global_path_.push_back(OdomDouble(x_2, y_2));
 				global_path_.push_back(OdomDouble(mean_x, mean_y));
 				global_path_.push_back(OdomDouble(x_1, y_1));
@@ -97,6 +111,17 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 vector<double> Planner::getLinearValues() {
 	double m = (global_path_.back().getY()-global_path_.front().getY()) / (global_path_.back().getX()-global_path_.front().getX());
 	double n = -global_path_.front().getX()*m + global_path_.front().getY();
+
+	vector<double> result;
+	result.push_back(m);
+	result.push_back(n);
+
+	return result;
+}
+
+vector<double> Planner::getLinearValues(geometry_msgs::Point p, int x_front, int y_front){
+	double m = (p.y - y_front) / (p.x - x_front);
+	double n = -x_front*m + y_front;
 
 	vector<double> result;
 	result.push_back(m);
