@@ -4,7 +4,6 @@
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl_ros/point_cloud.h"
 #include "pcl_ros/transforms.h"
-#include "velodyne_pointcloud/point_types.h"
 
 #include "pcl/point_types.h"
 #include "pcl/io/pcd_io.h"
@@ -24,8 +23,8 @@
 
 #include "planner/OdomDouble.h"
 
-#define GLOBAL_PATH_FILE "/home/hyeonbeen/path.txt"
-#define NEW_GLOBAL_PATH_FILE "/home/hyeonbeen/new_path.txt"
+#define GLOBAL_PATH_FILE "/home/kuuve/path.txt"
+#define NEW_GLOBAL_PATH_FILE "/home/kuuve/new_path.txt"
 
 #define DIST_OBS_HP 3.0 // range to detect obstacles
 #define CLUSTER_HP 1.5 // distance to clustering between points
@@ -64,7 +63,7 @@ public:
 	void loadGlobalPath();
 	void calcDistance();
 	vector<double> getLinearValues();
-	vector<double> getLinearValues(geometry_msgs::Point p, int x_front, int y_front);
+	vector<double> getLinearValues(geometry_msgs::Point p, double x_front, double y_front);
 	int getClosestPointIndex(geometry_msgs::Point p);
 	void visualize(vector<geometry_msgs::Point> obs_points);
 	double getDist(geometry_msgs::Point point_1, OdomDouble p );
