@@ -56,18 +56,21 @@ private:
 
 public:
     void initSetup();
-
 	void alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points);
-
     void setPlan();
 	void loadGlobalPath();
 	void calcDistance();
-	vector<double> getLinearValues();
-	vector<double> getLinearValues(geometry_msgs::Point p, double x_front, double y_front);
-	int getClosestPointIndex(geometry_msgs::Point p);
-	void visualize(vector<geometry_msgs::Point> obs_points);
-	double getDist(geometry_msgs::Point point_1, OdomDouble p );
-	double getDist(geometry_msgs::Point point_1, geometry_msgs::Point point_2);
     void savePath();
 	void odomCallback(const nav_msgs::Odometry::ConstPtr &odomsg);
+	void visualize(vector<geometry_msgs::Point> obs_points);
+
+	vector<double> getLinearValues();
+	vector<double> getLinearValues(geometry_msgs::Point p, double x_front, double y_front);
+
+	int getClosestPointIndex(geometry_msgs::Point p);
+
+	double getDist(geometry_msgs::Point point_1, OdomDouble p );
+	double getDist(geometry_msgs::Point point_1, geometry_msgs::Point point_2);
+	double getDist(geometry_msgs::Point p, double m, double n);
+
 };

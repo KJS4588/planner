@@ -1,6 +1,7 @@
 #include "planner/planner.h"
 #include "clustering.cpp"
 
+#define OFFSET 0.8
 
 void Planner::initSetup(){
     point_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/cluster_object", 10);
@@ -18,7 +19,7 @@ void Planner::odomCallback(const nav_msgs::Odometry::ConstPtr &odomsg){
 }
 
 void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_points) {
-	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, 10, 16, -1, 2);
+	vector<geometry_msgs::Point> obs_points = Cluster().cluster(aligned_points, -7, -2, -3, -1);
 	visualize(obs_points);
 
 	if (obs_points.size() >= 2) { // two obstacles detected -> set new global path
@@ -27,17 +28,23 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			double m = getLinearValues().at(0);
 			double n = getLinearValues().at(1);
 			
+			double dist_1 = getDist(obs_points.at(0), m, n);
+			double dist_2 = getDist(obs_points.at(1), m, n);
+
 			// closer symmetric point
 			double x_1 = obs_points.at(0).x - 2*m*(m*obs_points.at(0).x - obs_points.at(0).y + n) / (m*m + 1);
 			double y_1 = obs_points.at(0).y + 2*(m*obs_points.at(0).x - obs_points.at(0).y + n) / (m*m + 1);
-
+			
 			// farther symmetric point
 			double x_2 = obs_points.at(1).x - 2*m*(m*obs_points.at(1).x - obs_points.at(1).y + n) / (m*m + 1);
 			double y_2 = obs_points.at(1).y + 2*(m*obs_points.at(1).x - obs_points.at(1).y + n) / (m*m + 1);
-		
+	
+			double mean_x = (obs_points.at(0).x + obs_points.at(1).x) / 2;
+			double mean_y = (obs_points.at(0).y + obs_points.at(1).y) / 2;
+
+			
+
 			// mean point of symmetric points
-			double mean_x = (x_1 + x_2) / 2;
-			double mean_y = (y_1 + y_2) / 2;
 
 			// closest index of global path from first obstacle
 			int closest_obs_index = -1;
@@ -46,11 +53,8 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			local_point.x = lx;
 			local_point.y = ly;
 
-			if (getDist(local_point, obs_points.at(0)) > getDist(local_point, obs_points.at(1))) {
-					closest_obs_index = 1;
-			} else {
-					closest_obs_index = 0;
-			}
+			if (getDist(local_point, obs_points.at(0)) > getDist(local_point, obs_points.at(1)))  closest_obs_index = 1;
+			else  closest_obs_index = 0;
 
 
 			int closest_index = getClosestPointIndex(obs_points.at(closest_obs_index));
@@ -63,7 +67,7 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			int count = 0;
 			int origin_size_global_path = global_path_.size();
 
-			while(count < origin_size_global_path-closest_index+4) {
+			while(count < origin_size_global_path-closest_index+2) {
 				global_path_.pop_back();
 				count++;
 			}
@@ -74,7 +78,17 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			if (closest_obs_index == 0) {
 				double a = getLinearValues(obs_points.at(0), x_1, y_1).at(0);
 				double b = getLinearValues(obs_points.at(0), x_1, y_1).at(1);
-				
+			
+				// displace symmetric point(external division) (offset+dist) : (offset-dist)  
+			
+				if (dist_1 < OFFSET){
+					x_1 = ((0.850 + dist_1)*x_1 - (0.850 - dist_1)*obs_points.at(0).x)/(2*dist_1);
+					y_1 = ((0.850 + dist_1)*y_1 - (0.850 - dist_1)*obs_points.at(0).y)/(2*dist_1);
+				}
+				if (dist_2 < OFFSET){
+					x_2 = ((0.850 + dist_2)*x_2 - (0.850 - dist_2)*obs_points.at(1).x)/(2*dist_2);
+					y_2 = ((0.850 + dist_2)*y_2 - (0.850 - dist_2)*obs_points.at(1).y)/(2*dist_2);
+				}
 
 				double x_3 = obs_points.at(1).x - 2*a*(a*obs_points.at(1).x - obs_points.at(1).y + b) / (a*a + 1);
 				double y_3 = obs_points.at(1).y + 2*(a*obs_points.at(1).x - obs_points.at(1).y + b) / (a*a + 1);
@@ -87,6 +101,16 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 				double a = getLinearValues(obs_points.at(1), x_2, y_2).at(0);
 				double b = getLinearValues(obs_points.at(1), x_2, y_2).at(1);
 				
+				// displace symmetric point(external division) (offset+dist) : (offset-dist)  
+				if (dist_1 < OFFSET){
+					x_1 = ((0.850 + dist_1)*x_1 - (0.850 - dist_1)*obs_points.at(0).x)/(2*dist_1);
+					y_1 = ((0.850 + dist_1)*y_1 - (0.850 - dist_1)*obs_points.at(0).y)/(2*dist_1);
+				}
+				if (dist_2 < OFFSET){
+					x_2 = ((0.850 + dist_2)*x_2 - (0.850 - dist_2)*obs_points.at(1).x)/(2*dist_2);
+					y_2 = ((0.850 + dist_2)*y_2 - (0.850 - dist_2)*obs_points.at(1).y)/(2*dist_2);
+				}
+
 				double x_3 = obs_points.at(0).x - 2*a*(a*obs_points.at(0).x - obs_points.at(0).y + b) / (a*a + 1);
 				double y_3 = obs_points.at(0).y + 2*(a*obs_points.at(0).x - obs_points.at(0).y + b) / (a*a + 1);
 				
@@ -99,7 +123,7 @@ void Planner::alignedCallback(const sensor_msgs::PointCloud2ConstPtr& aligned_po
 			global_path_.push_back(g_last);
 
 			cout << "resized 2 global path -> " << global_path_.size() << endl;
-
+			cout << "Dist1 : " << dist_1 << "Dist2 : " << dist_2 << endl;
 			savePath();
 
 			nh_.setParam("/isGlobalPathChanged", true);
@@ -153,6 +177,10 @@ double Planner::getDist(geometry_msgs::Point point_1, OdomDouble point_2){
 
 double Planner::getDist(geometry_msgs::Point point_1, geometry_msgs::Point point_2){
 	return sqrt(pow(point_1.x - point_2.x , 2) + pow(point_1.y - point_2.y , 2));
+}
+
+double Planner::getDist(geometry_msgs::Point p, double m, double n){
+	return abs(m*p.x - p.y + n)/sqrt(m*m + 1);
 }
 
 void Planner::loadGlobalPath() {
